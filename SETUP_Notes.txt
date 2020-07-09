@@ -1,0 +1,219 @@
+Endstop Plugs
+
+
+/**
+ * Default Axis Steps Per Unit (steps/mm)
+ * Override with M92
+ *                                      X, Y, Z, E0 [, E1[, E2...]]
+ */
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 96 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 400, 95 }
+// 1 & 2 - 
+//https://blog.prusaprinters.org/calculator_3416
+// 3 - def
+// 4 - tronxy examples
+
+
+
+/**
+ * Default Max Feed Rate (mm/s)
+ * Override with M203
+ *                                      X, Y, Z, E0 [, E1[, E2...]]
+ */
+//#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 500, 500, 25, 300 }
+
+
+#define FIX_MOUNTED_PROBE
+
+BIQU Automatic Leveling Sensor Module
+
+
+Enable filament runout detection - M412 S1 
+Disable filament runout detection - M412 S0 
+Report filament runout state - M412
+"Filament runout ON"
+
+
+G28 will disable bed leveling (but preserves your leveling data). You can enable RESTORE_LEVELING_AFTER_G28 to keep leveling in its previous state.
+G29 will automatically probe the bed or guide you to do a paper-test at various points. After measurement it calculates a correction grid or matrix and enables leveling compensation. The specific behavior depends on configuration and type of bed leveling.
+M500 will save the bed leveling data to EEPROM. M501 will load it. M502 will erase it. And M503 will report it.
+M420 S<bool> can be used to enable/disable bed leveling. For example, M420 S1 must be used after M501 to enable the loaded mesh or matrix, and to re-enable leveling after G28, which disables leveling compensation.
+A “Level Bed” menu item can be added to the LCD with the LCD_BED_LEVELING option.
+
+
+UBL Unified Bed Leveling - https://marlinfw.org/docs/features/unified_bed_leveling.html
+
+;------------------------------------------
+;--- Setup and initial probing commands ---
+;------------------------------------------
+M502            ; Reset settings to configuration defaults...
+M500            ; ...and Save to EEPROM. Use this on a new install.
+M501            ; Read back in the saved EEPROM.  
+
+M190 S65        ; Not required, but having the printer at temperature helps accuracy
+M104 S210       ; Not required, but having the printer at temperature helps accuracy
+
+G28             ; Home XYZ.
+G29 P1          ; Do automated probing of the bed.
+G29 P2 B T      ; Manual probing of locations USUALLY NOT NEEDED!!!!
+G29 P3 T        ; Repeat until all mesh points are filled in.
+
+G29 T           ; View the Z compensation values.
+G29 S1          ; Save UBL mesh points to EEPROM.
+G29 F 10.0      ; Set Fade Height for correction at 10.0 mm.
+G29 A           ; Activate the UBL System.
+M500            ; Save current setup. WARNING: UBL will be active at power up, before any `G28`.
+;---------------------------------------------
+;--- Fine Tuning of the mesh happens below ---
+;---------------------------------------------
+??? G26 C P5.0 F3.0 ; Produce mesh validation pattern with primed nozzle (5mm) and filament diameter 3mm 
+                ; PLA temperatures are assumed unless you specify, e.g., B 105 H 225 for ABS Plastic
+
+G26 Bxx Hyy F1.75 L0.2 S0.4 will usually get you something reasonable:
+Bxx – bed temperature
+Hyy – hotend temperature
+F1.75 – filament width of 1.75mm (default)
+L0.2 – layer height of 0.2mm (default)
+S0.4 – nozzle diameter of 0.4mm (default)
+
+G29 P4 T        ; Move nozzle to 'bad' areas and fine tune the values if needed
+                ; Repeat G26 and G29 P4 T  commands as needed.
+
+G29 S1          ; Save UBL mesh values to EEPROM.
+M500            ; Resave UBL's state information.
+;----------------------------------------------------
+;--- Use 3-point probe to transform a stored mesh ---
+;----------------------------------------------------
+G29 L1          ; Load the mesh stored in slot 1 (from G29 S1)
+G29 J           ; No size specified on the J option tells G29 to probe the specified 3 points
+                ; and tilt the mesh according to what it finds.
+
+// Note: Test audio output with the G-Code:
+//  M300 S<frequency Hz> P<duration ms>
+
+#define AUTO_BED_LEVELING_UBL
+
+
+#define ENABLE_LEVELING_FADE_HEIGHT
+Available with MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, and AUTO_BED_LEVELING_UBL.
+This option adds the Z parameter to M420 which sets a fade distance over which leveling will be gradually reduced. Above the given Z height, leveling compensation will no longer be applied.
+This feature exists to prevent irregularities in the bed from propagating through the model’s entire height. Fading out leveling also reduces computational requirements and resonance from the Z axis above the fade height. For a well-aligned machine, this feature can improve print results.
+Example: To have leveling fade out over the first 10mm of layer printing use M420 Z10. If each layer is 0.2 mm high, leveling compensation will be reduced by 1/50th (2 %) after each layer. Above 10mm the machine will move without compensation.
+
+
+G26 Mesh Validation Pattern
+/**
+ * Enable the G26 Mesh Validation Pattern tool.
+ */
+#define G26_MESH_VALIDATION   // Enable G26 mesh validation
+#if ENABLED(G26_MESH_VALIDATION)
+  #define MESH_TEST_NOZZLE_SIZE     0.4   // (mm) Diameter of primary nozzle.
+  #define MESH_TEST_LAYER_HEIGHT    0.2   // (mm) Default layer height for the G26 Mesh Validation Tool.
+  #define MESH_TEST_HOTEND_TEMP   205   // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+  #define MESH_TEST_BED_TEMP       60   // (°C) Default bed temperature for the G26 Mesh Validation Tool.
+  #define G26_XY_FEEDRATE         20    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
+#endif
+When using any of the mesh-based leveling systems (1.1.7) you can activate G26_MESH_VALIDATION to print test patterns and fine-tune the mesh. See G26 Mesh Validation for full details. The G26 command accepts parameters for nozzle size, layer height, etc. The sub-options above specify the default values that will be applied for omitted parameters.
+
+
+
+
+
+LINEAR advance calibration
+https://marlinfw.org/docs/features/lin_advance.html
+https://marlinfw.org/tools/lin_advance/k-factor.html
+
+
+
+The SL42STH40-1684A motor specs are:
+
+Step Angle: 1.8°
+Step Angle Accuracy: ±5% (full step, no load)
+Voltage: 2.8V
+Current per phase: 1.68A
+Resistance per phase: 1.65Ω
+Resistance accuracy: ±10%
+Inductance per phase: 3.2mH
+Inductance accuracy: ±20%
+Holding torque: 3.6 Kg·cm (0.4 N·m)
+Moment of inertia: 54 g/cm^2
+Weight: 0.28 kg
+Orientation torque: 150 g/cm
+Length: 40 mm
+Temperature rise: 80°C max (rated current, 2 phases on)
+Ambient temperature: -20°C ~ +50°C
+Insulation resistance: 100MΩ min, 500VDC
+Shaft radial play: 0.02 mm max (450g load)
+Shaft axial play: 0.08 mm max (450g load)
+Max. radial force: 28N (20mm from the flange)
+Max. axial force: 10N
+
+current	voltageDRV8825	Result
+1.4A	0.75V	working for x,y and z axis
+1.6A	0.8V	working for extruder
+2A	1.0V	working but motor got so hot that acrlyc support deformed
+
+
+
+PID configuration is easy! 
+It can be done with a command such as "M303 C8 S175". 
+That will run the PID tuning through 8 cycles at 175C. 
+When it's complete, it will give you a Kp, Ki, and Kd value to plug into your firmware.
+
+Recv: PID Autotune finished! Put the last Kp, Ki and Kd constants from below into Configuration.h
+Recv: #define  DEFAULT_Kp 26.02
+Recv: #define  DEFAULT_Ki 1.73
+Recv: #define  DEFAULT_Kd 97.86
+Recv: Resend: 3
+Printer requested line 3 but no sufficient history is available, can't resend
+
+
+
+  /**
+   * Monitor Trinamic drivers for error conditions,
+   * like overtemperature and short to ground.
+   * In the case of overtemperature Marlin can decrease the driver current until error condition clears.
+   * Other detected conditions can be used to stop the current print.
+   * Relevant g-codes:
+   * M906 - Set or get motor current in milliamps using axis codes X, Y, Z, E. Report values if no axis codes given.
+   * M911 - Report stepper driver overtemperature pre-warn condition.
+   * M912 - Clear stepper driver overtemperature pre-warn condition flag.
+   * M122 - Report driver parameters (Requires TMC_DEBUG)
+   */
+  #define MONITOR_DRIVER_STATUS
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+M503 - info & help
+M569 - stelthChop/spreadCycle info
+M569 S0 E0 - switch mode for extruder (E0) 
+M502 - load default settings
+M500 - store settings
+M914 X60 Y60 Z90 - set homing sensitivity - follow by -
+M500 - to store
+
+M122 
+
+
+explore: 
+//#define PHOTO_GCODE
+#if ENABLED(PHOTO_GCODE)
+  // A position to move to (and raise Z) before taking the photo
+  //#define PHOTO_POSITION { X_MAX_POS - 5, Y_MAX_POS, 0 }  // { xpos, ypos, zraise } (M240 X Y Z)
+  //#define PHOTO_DELAY_MS   100                            // (ms) Duration to pause before moving back (M240 P)
+  //#define PHOTO_RETRACT_MM   6.5                          // (mm) E retract/recover for the photo move (M240 R S)
+
+  // Canon RC-1 or homebrew digital camera trigger
+  // Data from: http://www.doc-diy.net/photo/rc-1_hacked/
+  //#define PHOTOGRAPH_PIN 23
+
+  // Canon Hack Development Kit
+  // http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
+  //#define CHDK_PIN        4
+
+  // Optional second move with delay to trigger the camera shutter
+  //#define PHOTO_SWITCH_POSITION { X_MAX_POS, Y_MAX_POS }  // { xpos, ypos } (M240 I J)
+
+  // Duration to hold the switch or keep CHDK_PIN high
+  //#define PHOTO_SWITCH_MS   50 // (ms) (M240 D)
+#endif

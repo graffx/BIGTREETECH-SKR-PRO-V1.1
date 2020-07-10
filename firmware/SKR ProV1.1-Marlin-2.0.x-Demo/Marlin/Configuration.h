@@ -743,7 +743,7 @@
 // https://blog.prusaprinters.org/calculator_3416
 // 1/32 uStep, 1.8/200 rotation, 2mm pitch, Pulley tooth count 20 = 160
 // 1/32 uStep, 1.8/200 rotation, Leadscrew pitch 8mm/revolution, 1:1 = 800
-// 4 - tronxy examples
+// 4 - tronxy examples - ids tbd
 
 
 /**
@@ -1509,7 +1509,7 @@
 
 #define PREHEAT_2_LABEL       "ABS"
 #define PREHEAT_2_TEMP_HOTEND 240
-#define PREHEAT_2_TEMP_BED    100
+#define PREHEAT_2_TEMP_BED    90
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
 /**
@@ -1720,13 +1720,13 @@
 // produce one step. Should be increased for high-resolution encoders.
 //
 //#define ENCODER_PULSES_PER_STEP 4
+// ids - check tbd
 
 //
 // Use this option to override the number of step signals required to
 // move between next/prev menu items.
 //
 //#define ENCODER_STEPS_PER_MENU_ITEM 1
-// ids - check tbd
 
 /**
  * Encoder Direction Options
@@ -2179,7 +2179,7 @@
 // Temperature status LEDs that display the hotend and bed temperature.
 // If all hotends, bed temperature, and target temperature are under 54C
 // then the BLUE led is on. Otherwise the RED led is on. (1C hysteresis)
-//#define TEMP_STAT_LEDS
+#define TEMP_STAT_LEDS
 
 // SkeinForge sends the wrong arc g-codes when using Arc Point as fillet procedure
 //#define SF_ARC_FIX
@@ -2199,7 +2199,7 @@
 
 /**
  * RGB LED / LED Strip Control
- *
+ * ids - tbd
  * Enable support for an RGB LED connected to 5V digital pins, or
  * an RGB Strip connected to MOSFETs controlled by digital pins.
  *

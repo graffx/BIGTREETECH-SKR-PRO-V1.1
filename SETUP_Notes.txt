@@ -361,3 +361,190 @@ configuration_adv.h
 #define PID_FAN_SCALING
 
 
+Automatic Temperature
+#define AUTOTEMP
+#if ENABLED(AUTOTEMP)
+  #define AUTOTEMP_OLDWEIGHT 0.98
+#endif
+With Automatic Temperature the hotend target temperature is calculated by all the buffered lines of gcode. The maximum buffered steps/sec of the extruder motor is called “se”. Start autotemp mode with M109 F<factor> S<mintemp> B<maxtemp>, giving a range of temperatures. The target temperature is set to mintemp + factor * se[steps/sec] and is limited by mintemp and maxtemp. Turn this off by executing M109 without F. If the temperature is set to a value below mintemp (e.g., by M104) autotemp will not be applied.
+Example: Try M109 S215 B260 F1 in your start.gcode to set a minimum temperature of 215 when idle, which will boost up to 260 as extrusion increases in speed.
+
+
+#define QUICK_HOME
+#define HOME_Y_BEFORE_X
+
+
+/**
+ * Z Steppers Auto-Alignment
+ * Add the G34 command to align multiple Z steppers using a bed probe.
+ */
+#define Z_STEPPER_AUTO_ALIGN
+#if ENABLED(Z_STEPPER_AUTO_ALIGN)
+  // Define probe X and Y positions for Z1, Z2 [, Z3 [, Z4]]
+  // If not defined, probe limits will be used.
+  // Override with 'M422 S<index> X<pos> Y<pos>'
+  //#define Z_STEPPER_ALIGN_XY { {  10, 190 }, { 100,  10 }, { 190, 190 } }
+
+  /**
+   * Orientation for the automatically-calculated probe positions.
+   * Override Z stepper align points with 'M422 S<index> X<pos> Y<pos>'
+   *
+   * 2 Steppers:  (0)     (1)
+   *               |       |   2   |
+   *               | 1   2 |       |
+   *               |       |   1   |
+   *
+   * 3 Steppers:  (0)     (1)     (2)     (3)
+   *               |   3   | 1     | 2   1 |     2 |
+   *               |       |     3 |       | 3     |
+   *               | 1   2 | 2     |   3   |     1 |
+   *
+   * 4 Steppers:  (0)     (1)     (2)     (3)
+   *               | 4   3 | 1   4 | 2   1 | 3   2 |
+   *               |       |       |       |       |
+   *               | 1   2 | 2   3 | 3   4 | 4   1 |
+   *
+   */
+  #ifndef Z_STEPPER_ALIGN_XY
+    //#define Z_STEPPERS_ORIENTATION 0
+  #endif
+
+  // Provide Z stepper positions for more rapid convergence in bed alignment.
+  // Requires triple stepper drivers (i.e., set NUM_Z_STEPPER_DRIVERS to 3)
+  //#define Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS
+  #if ENABLED(Z_STEPPER_ALIGN_KNOWN_STEPPER_POSITIONS)
+    // Define Stepper XY positions for Z1, Z2, Z3 corresponding to
+    // the Z screw positions in the bed carriage.
+    // Define one position per Z stepper in stepper driver order.
+    #define Z_STEPPER_ALIGN_STEPPER_XY { { 210.7, 102.5 }, { 152.6, 220.0 }, { 94.5, 102.5 } }
+  #else
+    // Amplification factor. Used to scale the correction step up or down in case
+    // the stepper (spindle) position is farther out than the test point.
+    #define Z_STEPPER_ALIGN_AMP 1.0       // Use a value > 1.0 NOTE: This may cause instability!
+  #endif
+
+  // On a 300mm bed a 5% grade would give a misalignment of ~1.5cm
+  #define G34_MAX_GRADE              3    // (%) Maximum incline that G34 will handle
+  #define Z_STEPPER_ALIGN_ITERATIONS 5    // Number of iterations to apply during alignment
+  #define Z_STEPPER_ALIGN_ACC        0.02 // Stop iterating early if the accuracy is better than this
+  #define RESTORE_LEVELING_AFTER_G34      // Restore leveling after G34 is done?
+  // After G34, re-home Z (G28 Z) or just calculate it from the last probe heights?
+  // Re-homing might be more precise in reproducing the actual 'G28 Z' homing height, especially on an uneven bed.
+  #define HOME_AFTER_G34
+#endif
+
+
+
+  // Include a page of printer information in the LCD Main Menu
+  #define LCD_INFO_MENU
+  #if ENABLED(LCD_INFO_MENU)
+    //#define LCD_PRINTER_INFO_IS_BOOTSCREEN // Show bootscreen(s) instead of Printer Info pages
+  #endif
+  
+  
+  #define LCD_SHOW_E_TOTAL
+  
+  
+    //#define POWER_LOSS_RECOVERY
+  // ids tbd
+  #if ENABLED(POWER_LOSS_RECOVERY)
+    #define PLR_ENABLED_DEFAULT   false // Power Loss Recovery enabled by default. (Set with 'M413 Sn' & M500)
+    //#define BACKUP_POWER_SUPPLY       // Backup power / UPS to move the steppers on power loss
+    //#define POWER_LOSS_ZRAISE       2 // (mm) Z axis raise on resume (on power loss with UPS)
+    //#define POWER_LOSS_PIN         44 // Pin to detect power loss. Set to -1 to disable default pin on boards without module.
+    //#define POWER_LOSS_STATE     HIGH // State of pin indicating power loss
+    //#define POWER_LOSS_PULL           // Set pullup / pulldown as appropriate
+    //#define POWER_LOSS_PURGE_LEN   20 // (mm) Length of filament to purge on resume
+    //#define POWER_LOSS_RETRACT_LEN 10 // (mm) Length of filament to retract on fail. Requires backup power.
+
+    // Without a POWER_LOSS_PIN the following option helps reduce wear on the SD card,
+    // especially with "vase mode" printing. Set too high and vases cannot be continued.
+    #define POWER_LOSS_MIN_Z_CHANGE 0.05 // (mm) Minimum Z change before saving power-loss data
+  #endif
+
+
+
+  /**
+   * Set this option to one of the following (or the board's defaults apply):
+   *
+   *           LCD - Use the SD drive in the external LCD controller.
+   *       ONBOARD - Use the SD drive on the control board. (No SD_DETECT_PIN. M21 to init.)
+   *  CUSTOM_CABLE - Use a custom cable to access the SD (as defined in a pins file).
+   *
+   * :[ 'LCD', 'ONBOARD', 'CUSTOM_CABLE' ]
+   */
+  #define SDCARD_CONNECTION LCD
+
+
+
+Babystepping
+#define BABYSTEPPING
+#if ENABLED(BABYSTEPPING)
+  //#define INTEGRATED_BABYSTEPPING         // EXPERIMENTAL integration of babystepping into the Stepper ISR
+  //#define BABYSTEP_WITHOUT_HOMING
+  //#define BABYSTEP_XY                     // Also enable X/Y Babystepping. Not supported on DELTA!
+  #define BABYSTEP_INVERT_Z false           // Change if Z babysteps should go the other way
+  #define BABYSTEP_MULTIPLICATOR_Z  1       // Babysteps are very small. Increase for faster motion.
+  #define BABYSTEP_MULTIPLICATOR_XY 1
+  //#define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
+  #if ENABLED(DOUBLECLICK_FOR_Z_BABYSTEPPING)
+    #define DOUBLECLICK_MAX_INTERVAL 1250 
+    //#define BABYSTEP_ALWAYS_AVAILABLE
+    //#define MOVE_Z_WHEN_IDLE
+    #if ENABLED(MOVE_Z_WHEN_IDLE)
+      #define MOVE_Z_IDLE_MULTIPLICATOR 1
+    #endif
+  #endif
+  //#define BABYSTEP_DISPLAY_TOTAL
+  //#define BABYSTEP_ZPROBE_OFFSET
+  #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
+    //#define BABYSTEP_HOTEND_Z_OFFSET
+    //#define BABYSTEP_ZPROBE_GFX_OVERLAY
+  #endif
+#endif
+Babystepping enables M290 and LCD menu items to move the axes by tiny increments without changing the current position values. This feature is used primarily to adjust the Z axis in the first layer of a print in real-time. Warning: Does not respect endstops!
+
+
+
+//#define LIN_ADVANCE
+// ids TBD!
+
+
+#define SOFTWARE_DRIVER_ENABLE
+
+
+  /**
+   * Monitor Trinamic drivers for error conditions,
+   * like overtemperature and short to ground.
+   * In the case of overtemperature Marlin can decrease the driver current until error condition clears.
+   * Other detected conditions can be used to stop the current print.
+   * Relevant g-codes:
+   * M906 - Set or get motor current in milliamps using axis codes X, Y, Z, E. Report values if no axis codes given.
+   * M911 - Report stepper driver overtemperature pre-warn condition.
+   * M912 - Clear stepper driver overtemperature pre-warn condition flag.
+   * M122 - Report driver parameters (Requires TMC_DEBUG)
+   */
+  //#define MONITOR_DRIVER_STATUS
+  
+  
+    #define HYBRID_THRESHOLD
+// ids check tbd
+  #define X_HYBRID_THRESHOLD     100  // [mm/s]
+  #define X2_HYBRID_THRESHOLD    100
+  #define Y_HYBRID_THRESHOLD     100
+  #define Y2_HYBRID_THRESHOLD    100
+  #define Z_HYBRID_THRESHOLD       3
+  #define Z2_HYBRID_THRESHOLD      3
+  #define Z3_HYBRID_THRESHOLD      3
+  #define Z4_HYBRID_THRESHOLD      3
+  #define E0_HYBRID_THRESHOLD     30
+  #define E1_HYBRID_THRESHOLD     30
+  #define E2_HYBRID_THRESHOLD     30
+  #define E3_HYBRID_THRESHOLD     30
+  #define E4_HYBRID_THRESHOLD     30
+  #define E5_HYBRID_THRESHOLD     30
+  #define E6_HYBRID_THRESHOLD     30
+  #define E7_HYBRID_THRESHOLD     30
+  
+  
+  

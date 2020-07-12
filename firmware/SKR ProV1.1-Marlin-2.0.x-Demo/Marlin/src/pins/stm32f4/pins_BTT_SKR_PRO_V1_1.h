@@ -33,6 +33,11 @@
 //#define SRAM_EEPROM_EMULATION                   // Use BackSRAM-based EEPROM emulation
 //#define FLASH_EEPROM_EMULATION                  // Use Flash-based EEPROM emulation
 
+//ids additions
+#ifndef FIL_RUNOUT_PIN
+  #define FIL_RUNOUT_PIN PE15 //X_MAX_PIN
+#endif
+
 //
 // Servos
 //
@@ -86,12 +91,22 @@
   #define E0_CS_PIN                         PB3
 #endif
 
+// ids 
+#define Z2_STEP_PIN                         PD15
+#define Z2_DIR_PIN                          PE7
+#define Z2_ENABLE_PIN                       PA3
+#ifndef Z2_CS_PIN
+  #define Z2_CS_PIN                         PG15
+#endif
+/**
 #define E1_STEP_PIN                         PD15
 #define E1_DIR_PIN                          PE7
 #define E1_ENABLE_PIN                       PA3
 #ifndef E1_CS_PIN
   #define E1_CS_PIN                         PG15
 #endif
+**/
+
 
 #define E2_STEP_PIN                         PD13
 #define E2_DIR_PIN                          PG9
@@ -174,9 +189,9 @@
 #define HEATER_1_PIN                        PD14  // Heater1
 #define HEATER_2_PIN                        PB0   // Heater1
 #define HEATER_BED_PIN                      PD12  // Hotbed
-#define FAN_PIN                             PC8   // Fan0
+//#define FAN_PIN                             PC8   // Fan0
 #define FAN1_PIN                            PE5   // Fan1
-#define FAN2_PIN                            PE6   // Fan2
+//#define FAN2_PIN                            PE6   // Fan2
 
 //
 // Misc. Functions

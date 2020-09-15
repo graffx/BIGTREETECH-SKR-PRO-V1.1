@@ -33,6 +33,14 @@
 //#define SRAM_EEPROM_EMULATION                   // Use BackSRAM-based EEPROM emulation
 //#define FLASH_EEPROM_EMULATION                  // Use Flash-based EEPROM emulation
 
+//ids additions - adding EEPROM - https://www.instructables.com/id/BigTreeTech-SKR-Pro-V11-Adding-a-EEPROM/
+#define I2C_EEPROM
+#ifdef E2END
+   #undef E2END
+#endif
+#define E2END 0x7FFF // EEPROM end address AT24C256 (32kB)
+
+
 //ids additions
 #ifndef FIL_RUNOUT_PIN
   #define FIL_RUNOUT_PIN PE15 //X_MAX_PIN
